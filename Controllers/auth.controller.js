@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const User = require("../Models/users.model");
+const jwt = require("jsonwebtoken");
 
 exports.signup = async (req, res) => {
   const { email, password } = req.body;

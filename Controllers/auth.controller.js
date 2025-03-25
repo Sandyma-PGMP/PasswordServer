@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const User = require("../Models/users.model");
 
-exports.createUser = async (req, res) => {
+exports.signup = async (req, res) => {
   const { email, password } = req.body;
   try {
     const existingUser = await User.findOne({ email });
@@ -19,21 +19,33 @@ exports.createUser = async (req, res) => {
   }
 };
 
-exports.loginUser = async (req, res) => {
+exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
+    console.log("Login request received:", email); // Debugging Log
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) {
+      console.log("User not found");
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) {
+      console.log("Password does not match");
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log("Login successful, token generated");
+
     res.json({ message: "Login successful", token });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Login error:", err); // Print the real error
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
 
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
